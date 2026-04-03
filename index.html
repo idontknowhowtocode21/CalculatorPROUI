@@ -60,6 +60,123 @@
 <script src="toxic.js"></script>
 <script src="engine.js"></script>
 
+    <script>
+    // --- 1. THE ROUTER ---
+    // This function decides if a button press is for Math, Cards, or Toxic
+    function handleButton(btn) {
+        // Priority: If we are in the middle of ACAAN, 'C' acts as the Stage Manager
+        if (isTappingMode && tappingType === 'acaan' && btn === 'C') {
+            runAcaanStageManager(); // Located in acaan.js
+            return;
+        }
+
+        // Priority: If Tapping Mode is active (Toxic), block all other buttons
+        if (isTappingMode) return;
+
+        // Priority: If Card Mode is ON, capture the Card/Suit entry silently
+        if (cardMode && !['toggle', '='].includes(btn)) {
+            captureCardData(btn); // Located in acaan.js
+            return;
+        }
+
+        // Standard Calculator Routing
+        switch(btn) {
+            case 'C': 
+                clearAll(); 
+                break;
+            case '%': 
+                handlePercentLogic(); // Located in toxic.js
+                break;
+            case 'back': 
+                currentInput = currentInput.slice(0, -1); 
+                break;
+            case '=': 
+                runCalculation(); 
+                break;
+            case 'toggle': 
+                toggleSign(); 
+                break;
+            case '.': 
+                appendChar('.'); 
+                break;
+            default: 
+                appendChar(btn);
+        }
+        updateUI();
+    }
+
+    // --- 2. CORE MATH FUNCTIONS ---
+    function appendChar(char) {
+        const ops = ['+', '-', '×', '÷', '%'];
+        const last = currentInput.slice(-1);
+        
+        if (currentInput === "" && ['×', '÷', '%'].includes(char)) return;
+        
+        if (ops.includes(last) && ops.includes(char)) {
+            currentInput = currentInput.slice(0, -1) + char;
+        } else {
+            if (currentInput === "0" && !ops.includes(char)) {
+                currentInput = char;
+            } else {
+                currentInput += char;
+            }
+        }
+    }
+
+    function runCalculation() {
+        if (!currentInput) return;
+        try {
+            // Replace visual operators with JS math operators
+            let mathExpression = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
+            currentInput = eval(mathExpression).toString();
+            
+            // CLEAN UP: Ensure all secret modes turn off after the result is shown
+            isTappingMode = false;
+            tappingType = null;
+            tappingPhase = "normal";
+            
+            if (cardMode) killCardMode(); // Located in acaan.js
+            
+            document.getElementById('tap-cue').style.display = "none";
+        } catch (e) {
+            currentInput = "Error";
+        }
+        updateUI();
+    }
+
+    function clearAll() {
+        currentInput = "";
+        isTappingMode = false;
+        tappingType = null;
+        document.getElementById('tap-cue').style.display = "none";
+        updateUI();
+    }
+
+    function toggleSign() {
+        if (!currentInput) return;
+        currentInput = currentInput.startsWith('-') ? currentInput.slice(1) : '-' + currentInput;
+    }
+
+    // --- 3. UI RENDERING ---
+    function updateUI() {
+        const resultEl = document.getElementById('result');
+        resultEl.innerText = currentInput || "0";
+        
+        // Dynamic Font Scaling (Xiaomi Style)
+        let len = resultEl.innerText.length;
+        if (len > 15) resultEl.style.fontSize = "2.2rem";
+        else if (len > 11) resultEl.style.fontSize = "3rem";
+        else if (len > 7) resultEl.style.fontSize = "4rem";
+        else resultEl.style.fontSize = "5rem";
+
+        // Auto-scroll to the right so the cursor/last digit is always visible
+        setTimeout(() => {
+            resultEl.scrollLeft = resultEl.scrollWidth;
+        }, 0);
+    }
+</script>
+
+
 <script>
     let currentInput = "";
     const resultEl = document.getElementById('result');
