@@ -50,7 +50,7 @@ setupLong('btn-equals', () => {
     tappingPhase = "random";
 });
 
-// GLOBAL TAP HANDLER
+// GLOBAL TAP HANDLER (Inside engine.js)
 document.getElementById('calc-body').addEventListener('touchstart', (e) => {
     if (!isTappingMode) return;
     e.preventDefault();
@@ -60,12 +60,17 @@ document.getElementById('calc-body').addEventListener('touchstart', (e) => {
     } else {
         if (seqIdx < forceSequence.length) {
             currentInput += forceSequence[seqIdx++];
-            document.getElementById('tap-cue').style.display = "none";
+            updateUI(); // Force the screen to show the digit
         }
-        // AUTO-EXIT FOR TOXIC ONLY
-        if (tappingType === 'toxic' && seqIdx === forceSequence.length) {
-            isTappingMode = false;
+        
+        // CRITICAL FIX: Unlock the keypad IMMEDIATELY when sequence is done
+        if (seqIdx === forceSequence.length) {
+            isTappingMode = false; 
+            // We keep tappingType for reference, but isTappingMode = false 
+            // allows handleButton() to work again.
+            if (tappingType === 'toxic') {
+                document.getElementById('tap-cue').style.display = "none";
+            }
         }
     }
-    updateUI();
 }, {passive: false});
