@@ -1,8 +1,8 @@
 // engine.js - The Tapping Heart
 
 var isTappingMode = false;
-var tappingType = null; // 'toxic' or 'acaan'
-var tappingPhase = "normal";
+var tappingType = null; 
+var tappingPhase = "normal"; 
 var forceSequence = [];
 var seqIdx = 0;
 
@@ -61,33 +61,31 @@ setupLong('btn-equals', () => {
 });
 
 // --- GLOBAL TOUCH LISTENER ---
+// This is the part that was likely blocking your '=' button
 document.getElementById('calc-body').addEventListener('touchstart', (e) => {
-    // If we aren't in a secret mode, let the buttons work normally
+    // 1. If we aren't tapping, do nothing and let buttons work
     if (!isTappingMode) return;
 
-    // If the user touched a button while in Tapping Mode, stop the button from clicking
-    // EXCEPT if it's the 'C' button during ACAAN
+    // 2. Block the actual button press while we are tapping
+    // EXCEPT for the 'C' button during ACAAN mode
     if (e.target.tagName === 'BUTTON' && !(tappingType === 'acaan' && e.target.id === 'btn-c')) {
         e.preventDefault();
+        e.stopPropagation();
     }
 
     if (tappingType === 'acaan' && tappingPhase === "random") {
-        // Random Demo: show digits infinitely
         currentInput += Math.floor(Math.random() * 9) + 1;
     } else {
-        // Force Mode: Strictly one digit per tap
         if (seqIdx < forceSequence.length) {
             currentInput += forceSequence[seqIdx++];
             document.getElementById('tap-cue').style.display = "none";
         }
         
-        // CRITICAL FIX: Unlock the keypad for the '=' button
-        if (seqIdx === forceSequence.length) {
-            // If it's Toxic, we kill tapping mode IMMEDIATELY so the next touch (=) works
-            if (tappingType === 'toxic') {
-                isTappingMode = false;
-                // Leave tappingType as 'toxic' so runCalculation knows how to clean up
-            }
+        // --- THE FIX ---
+        // If it's Toxic Mode and we just finished the last digit, 
+        // we kill isTappingMode IMMEDIATELY so the next touch (=) works.
+        if (seqIdx === forceSequence.length && tappingType === 'toxic') {
+            isTappingMode = false;
         }
     }
     updateUI();
