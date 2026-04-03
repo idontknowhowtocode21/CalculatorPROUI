@@ -1,22 +1,29 @@
-let isTappingMode = false;
-let tappingType = null; // 'toxic' or 'acaan'
-let tappingPhase = "normal";
-let forceSequence = [];
-let seqIdx = 0;
+// engine.js - The Tapping Heart
 
-// HELPERS
+var isTappingMode = false;
+var tappingType = null; // 'toxic' or 'acaan'
+var tappingPhase = "normal";
+var forceSequence = [];
+var seqIdx = 0;
+
+// Helper for Long Press Triggers
 function setupLong(id, cb) {
     const el = document.getElementById(id);
     let t;
-    const start = (e) => { e.preventDefault(); t = setTimeout(cb, 800); };
+    const start = (e) => { 
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        t = setTimeout(cb, 800); 
+    };
     const stop = () => clearTimeout(t);
+    
     el.addEventListener('touchstart', start, {passive: false});
     el.addEventListener('touchend', stop);
     el.addEventListener('mousedown', start);
     el.addEventListener('mouseup', stop);
 }
 
-// TRIGGERS
+// --- TRIGGER 1: TOXIC FORCE (.) ---
 setupLong('btn-dot', () => {
     if (!toxicValue || currentInput === "" || cardMode) return;
     let last = currentInput.slice(-1);
@@ -31,10 +38,12 @@ setupLong('btn-dot', () => {
     isTappingMode = true;
     tappingType = 'toxic';
     tappingPhase = 'forced';
+    
     document.getElementById('tap-cue').innerText = forceSequence.length;
     document.getElementById('tap-cue').style.display = "block";
 });
 
+// --- TRIGGER 2: CARD MODE (+/-) ---
 setupLong('btn-toggle', () => {
     if (isTappingMode) return;
     cardMode = !cardMode;
@@ -42,6 +51,7 @@ setupLong('btn-toggle', () => {
     document.getElementById('tap-cue').style.display = cardMode ? "block" : "none";
 });
 
+// --- TRIGGER 3: ACAAN START (=) ---
 setupLong('btn-equals', () => {
     if (!cardMode || !acaanTarget) return;
     document.getElementById('tap-cue').style.display = "none";
@@ -50,27 +60,35 @@ setupLong('btn-equals', () => {
     tappingPhase = "random";
 });
 
-// GLOBAL TAP HANDLER (Inside engine.js)
+// --- GLOBAL TOUCH LISTENER ---
 document.getElementById('calc-body').addEventListener('touchstart', (e) => {
+    // If we aren't in a secret mode, let the buttons work normally
     if (!isTappingMode) return;
-    e.preventDefault();
+
+    // If the user touched a button while in Tapping Mode, stop the button from clicking
+    // EXCEPT if it's the 'C' button during ACAAN
+    if (e.target.tagName === 'BUTTON' && !(tappingType === 'acaan' && e.target.id === 'btn-c')) {
+        e.preventDefault();
+    }
 
     if (tappingType === 'acaan' && tappingPhase === "random") {
+        // Random Demo: show digits infinitely
         currentInput += Math.floor(Math.random() * 9) + 1;
     } else {
+        // Force Mode: Strictly one digit per tap
         if (seqIdx < forceSequence.length) {
             currentInput += forceSequence[seqIdx++];
-            updateUI(); // Force the screen to show the digit
+            document.getElementById('tap-cue').style.display = "none";
         }
         
-        // CRITICAL FIX: Unlock the keypad IMMEDIATELY when sequence is done
+        // CRITICAL FIX: Unlock the keypad for the '=' button
         if (seqIdx === forceSequence.length) {
-            isTappingMode = false; 
-            // We keep tappingType for reference, but isTappingMode = false 
-            // allows handleButton() to work again.
+            // If it's Toxic, we kill tapping mode IMMEDIATELY so the next touch (=) works
             if (tappingType === 'toxic') {
-                document.getElementById('tap-cue').style.display = "none";
+                isTappingMode = false;
+                // Leave tappingType as 'toxic' so runCalculation knows how to clean up
             }
         }
     }
+    updateUI();
 }, {passive: false});
