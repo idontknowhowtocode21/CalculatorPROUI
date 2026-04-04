@@ -3,7 +3,11 @@ let tappingType = null;
 let forceSequence = "";
 let seqIdx = 0;
 
-document.addEventListener('DOMContentLoaded', () => { updateUI(); }); //
+// 1. LIVE START: App initializes instantly
+document.addEventListener('DOMContentLoaded', () => { 
+    currentInput = "0"; 
+    updateUI(); 
+});
 
 const keypad = document.getElementById('keypad'); 
 const dotBtn = document.getElementById('btn-dot');
