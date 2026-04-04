@@ -3,7 +3,7 @@ let acaanActive = false, cardVal = "", foundPos = "";
 
 function activateAcaanMode() {
     acaanActive = true;
-    updateIndicator("•"); //
+    updateIndicator("•");
 }
 
 function captureCardData(btn) {
@@ -12,14 +12,18 @@ function captureCardData(btn) {
     const suits = {'÷':'S','×':'C','-':'H','+':'D'};
 
     if (vals[btn]) { cardVal = vals[btn]; return true; }
+    
     if (suits[btn] && cardVal) {
-        let idx = STACK.indexOf(cardVal + suits[btn]); //
+        let idx = STACK.indexOf(cardVal + suits[btn]);
         if (idx !== -1) { 
-            foundPos = (idx + 1).toString().padStart(2, '0'); // Always 2 digits
+            // LOCK AS STRING: Always 2 digits
+            foundPos = (idx + 1).toString().padStart(2, '0'); 
             updateIndicator(foundPos); 
         }
-        cardVal = ""; return true;
+        cardVal = ""; 
+        return true; 
     }
+
     if (btn === '=') { acaanActive = false; return false; }
     return false;
 }
