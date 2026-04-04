@@ -12,7 +12,10 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+          // Updated for GitHub Pages subfolder
+          navigator.serviceWorker.register('/CalculatorPROUI/sw.js')
+            .then(reg => console.log('SW Registered'))
+            .catch(err => console.log('SW Failed', err));
         });
       }
     </script>
@@ -25,7 +28,6 @@
             --text-white: #ffffff;
             --accent-orange: #ff9100;
         }
-
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
@@ -34,60 +36,50 @@
             user-select: none;
             margin: 0; padding: 0; 
         }
-
         body, html {
             height: 100%; width: 100%; background-color: var(--bg-black);
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
             display: flex; flex-direction: column; overflow: hidden; position: relative;
             color: var(--text-white);
         }
-
         .top-nav { 
             display: flex; justify-content: space-between; 
             padding: 20px; padding-top: max(20px, env(safe-area-inset-top)); 
             border-bottom: 1px solid #1a1a1a;
         }
-
         .icon-svg { width: 20px; height: 20px; fill: #707070; }
-
         #display-container { 
             flex: 1; display: flex; flex-direction: column; 
             justify-content: flex-end; align-items: flex-end; 
             padding: 40px; width: 100%;
         }
-
         #result { 
             font-size: 4rem; font-weight: 300; text-align: right; 
             line-height: 1.1; white-space: nowrap; overflow-x: auto; 
             width: 100%; scrollbar-width: none; 
         }
         #result::-webkit-scrollbar { display: none; }
-
         #keypad { 
             display: grid; grid-template-columns: repeat(4, 1fr); 
             gap: 15px; padding: 20px; 
             padding-bottom: max(20px, env(safe-area-inset-bottom));
             touch-action: none;
         }
-
         button { 
             aspect-ratio: 1 / 1; border-radius: 50%; border: none; 
             font-size: 2rem; font-weight: 400; display: flex; 
             align-items: center; justify-content: center; outline: none; 
             position: relative; cursor: pointer;
         }
-        
         button:active { opacity: 0.7; }
         .util-bg, .op-text { background-color: var(--btn-dark-grey); color: var(--text-white); }
         .num-bg, #btn-toggle, #btn-dot { background-color: var(--btn-light-grey); color: var(--text-white); }
         .op-text { font-size: 2.2rem; }
         .equals-btn { background-color: var(--accent-orange); color: white; font-size: 2.5rem; }
-
         #tap-cue { 
             position: absolute; bottom: 12px; right: 15px; 
             color: #3a3a3c; font-size: 0.7rem; pointer-events: none; display: none; 
         }
-
         #secret-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.98); z-index: 1000; flex-direction: column;
@@ -146,11 +138,9 @@
 
 <script>
     let currentInput = "0";
-
     function handleButton(btn) {
         if (isTappingMode && btn !== '=') return;
         if (typeof captureCardData === 'function' && captureCardData(btn)) return;
-
         switch(btn) {
             case 'C': currentInput = "0"; exitSecretMode(); break;
             case '%': handlePercentLogic(); break;
@@ -162,7 +152,6 @@
         }
         updateUI();
     }
-
     function appendChar(char) {
         const ops = ['+', '-', '×', '÷'];
         const last = currentInput.slice(-1);
@@ -173,7 +162,6 @@
         if (currentInput === "0" && !ops.includes(char)) currentInput = char;
         else currentInput += char;
     }
-
     function runCalculation() {
         try {
             let expr = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
@@ -182,12 +170,10 @@
         } catch (e) { currentInput = "0"; }
         updateUI();
     }
-
     function toggleSign() {
         if (currentInput === "0") return;
         currentInput = currentInput.startsWith('-') ? currentInput.slice(1) : '-' + currentInput;
     }
-
     function updateUI() {
         const res = document.getElementById('result');
         let val = currentInput.toString();
