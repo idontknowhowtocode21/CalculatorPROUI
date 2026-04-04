@@ -22,7 +22,6 @@
             display: flex; flex-direction: column; overflow: hidden; position: relative;
         }
 
-        /* Setup Overlay for Toxic Force */
         #secret-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column;
@@ -41,12 +40,11 @@
         
         #result { 
             font-size: 5rem; color: var(--text-white); font-weight: 200; text-align: right; 
-            line-height: 1.2; white-space: nowrap; overflow-x: auto; overflow-y: hidden; 
-            width: 100%; scrollbar-width: none; 
+            line-height: 1.2; white-space: nowrap; overflow-x: auto; width: 100%; scrollbar-width: none; 
         }
         #result::-webkit-scrollbar { display: none; }
 
-        #keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; padding-bottom: 30px; background-color: var(--bg-black); }
+        #keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; padding-bottom: 30px; }
         
         button { 
             aspect-ratio: 1 / 1; border-radius: 50%; border: none; 
@@ -60,16 +58,18 @@
         .util-text { color: var(--text-dim); }
         .equals-btn { background-color: var(--accent-orange); color: white; }
         
-        /* Tiny cue number for the performer */
-        #tap-cue { position: absolute; bottom: 12px; left: 12px; color: #2c2c2e; font-size: 0.75rem; pointer-events: none; display: none; }
+        #tap-cue { 
+            position: absolute; bottom: 8px; right: 12px; 
+            color: #3a3a3c; font-size: 0.75rem; pointer-events: none; display: none; 
+        }
     </style>
 </head>
 <body id="calc-body">
 
 <div id="secret-overlay">
-    <p style="margin-bottom: 10px; color: var(--text-dim);">Set Toxic Force</p>
+    <p style="margin-bottom: 10px; color: var(--text-dim);">Set Toxic Force Goal</p>
     <input type="number" id="force-input" placeholder="0">
-    <button onclick="saveToxicValue()" style="width: 150px; height: 50px; border-radius: 10px; background: var(--accent-orange); color: white; font-size: 1rem;">SAVE</button>
+    <button onclick="saveToxicValue()" style="width: 150px; height: 50px; border-radius: 10px; background: var(--accent-orange); color: white;">SAVE</button>
 </div>
 
 <div class="top-nav">
@@ -83,8 +83,8 @@
 
 <div id="keypad">
     <button class="util-text" id="btn-c" onclick="handleButton('C')">C</button>
-    <button class="util-text" onclick="handleButton('%')">%</button>
-    <button onclick="handleButton('back')">⌫</button>
+    <button class="util-text" id="btn-perc" onclick="handleButton('%')">%</button>
+    <button id="btn-back" onclick="handleButton('back')">⌫</button>
     <button class="op-text" id="btn-div" onclick="handleButton('÷')">÷</button>
 
     <button onclick="handleButton('7')">7</button>
@@ -116,27 +116,15 @@
 <script src="engine.js"></script>
 
 <script>
-    var currentInput = "";
-
-    // --- THE ROUTER ---
     function handleButton(btn) {
-        // Priority 1: Card Mode "C" Stage Management
-        if (isTappingMode && tappingType === 'acaan' && btn === 'C') {
-            runAcaanStageManager();
-            return;
+        // 1. Check if ACAAN is active and "swallowing" inputs
+        if (typeof captureCardData === 'function') {
+            if (captureCardData(btn)) return;
         }
 
-        // Priority 2: CRITICAL BYPASS - If '=' is pressed, ignore the lock
-        // This ensures the Equals button always works during the Toxic Reveal
+        // 2. Prevent normal buttons during a force tap (except Equals)
         if (isTappingMode && btn !== '=') return;
 
-        // Priority 3: Silent Card Entry (Interpreted in acaan.js)
-        if (cardMode && !isTappingMode && !['toggle', '='].includes(btn)) {
-            captureCardData(btn);
-            return;
-        }
-
-        // Standard Calculator Logic
         switch(btn) {
             case 'C': clearAll(); break;
             case '%': handlePercentLogic(); break;
@@ -150,66 +138,40 @@
     }
 
     function appendChar(char) {
-        const ops = ['+', '-', '×', '÷', '%'];
-        const last = currentInput.slice(-1);
-        if (currentInput === "" && ['×', '÷', '%'].includes(char)) return;
-        if (ops.includes(last) && ops.includes(char)) {
-            currentInput = currentInput.slice(0, -1) + char;
+        const ops = ['+', '-', '×', '÷'];
+        if (currentInput === "0" && !ops.includes(char)) {
+            currentInput = char;
         } else {
-            currentInput = (currentInput === "0" && !ops.includes(char)) ? char : currentInput + char;
+            currentInput += char;
         }
     }
 
     function runCalculation() {
-        if (!currentInput || currentInput === "0") return;
         try {
-            // Replace visual operators with JS math
-            let mathExpression = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
-            currentInput = eval(mathExpression).toString();
-            
-            // THE EQUALS FIX: Force all trick modes to reset upon calculation
-            isTappingMode = false;
-            tappingType = null;
-            tappingPhase = "normal";
-            
-            // Reset Card Mode if applicable
-            if (typeof killCardMode === "function") killCardMode(); 
-            
-            // Clean up visual cue
-            document.getElementById('tap-cue').style.display = "none";
-            
+            let expr = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
+            currentInput = eval(expr).toString();
+            exitSecretMode(); 
         } catch (e) {
-            currentInput = "Error";
+            currentInput = "0";
         }
         updateUI();
     }
 
     function clearAll() {
-        currentInput = "";
-        isTappingMode = false;
-        tappingType = null;
-        document.getElementById('tap-cue').style.display = "none";
+        currentInput = "0";
+        exitSecretMode();
         updateUI();
     }
 
     function toggleSign() {
-        if (!currentInput) return;
-        currentInput = currentInput.startsWith('-') ? currentInput.slice(1) : '-' + currentInput;
+        if (currentInput.startsWith('-')) currentInput = currentInput.slice(1);
+        else currentInput = '-' + currentInput;
     }
 
     function updateUI() {
-        const resultEl = document.getElementById('result');
-        resultEl.innerText = currentInput || "0";
-        
-        // Font size scaling logic
-        let len = resultEl.innerText.length;
-        if (len > 15) resultEl.style.fontSize = "2.2rem";
-        else if (len > 11) resultEl.style.fontSize = "3rem";
-        else if (len > 7) resultEl.style.fontSize = "4rem";
-        else resultEl.style.fontSize = "5rem";
-
-        // Keeps result scrolled to the end
-        setTimeout(() => { resultEl.scrollLeft = resultEl.scrollWidth; }, 0);
+        const res = document.getElementById('result');
+        res.innerText = currentInput || "0";
+        res.scrollLeft = res.scrollWidth;
     }
 </script>
 </body>
