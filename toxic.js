@@ -23,11 +23,12 @@ function saveToxicValue() {
 
 function calculateToxicGap() {
     try {
-        // Check if an ACAAN position is locked
+        // If a card position exists, it takes priority
         if (typeof foundPos !== 'undefined' && foundPos !== "") { 
             forceSequence = foundPos;
             tappingType = 'acaan';
         } else {
+            // Revert to primary goal
             let cleanInput = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
             let lastChar = currentInput.slice(-1);
             let evalInput = (['+','-','*','/'].includes(cleanInput.slice(-1))) ? cleanInput.slice(0,-1) : cleanInput;
