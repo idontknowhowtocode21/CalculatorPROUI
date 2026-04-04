@@ -8,42 +8,34 @@ const dotBtn = document.getElementById('btn-dot');
 const toggleBtn = document.getElementById('btn-toggle');
 let pressTimer;
 
-// Long Press Dot -> Toxic Force
 dotBtn.addEventListener('touchstart', (e) => {
-    pressTimer = setTimeout(() => {
-        if (typeof calculateToxicGap === 'function') calculateToxicGap();
-    }, 1000);
+    pressTimer = setTimeout(() => { calculateToxicGap(); }, 1000);
 });
 
-// Long Press Toggle -> ACAAN Mode
 toggleBtn.addEventListener('touchstart', (e) => {
-    pressTimer = setTimeout(() => {
-        if (typeof activateAcaanMode === 'function') activateAcaanMode();
-    }, 1000);
+    pressTimer = setTimeout(() => { activateAcaanMode(); }, 1000);
 });
 
 [dotBtn, toggleBtn].forEach(b => b.addEventListener('touchend', () => clearTimeout(pressTimer)));
 
-// GLOBAL TAPPING ENGINE
 body.addEventListener('touchstart', (e) => {
     if (!isTappingMode) return;
     
-    // Check if the tap is on a button or background
     if (e.target.tagName === 'BUTTON' || e.target.id === 'calc-body') {
         e.preventDefault();
         
         if (seqIdx < forceSequence.length) {
             let nextDigit = forceSequence[seqIdx++];
-            // Append force digit
             if (currentInput === "0") currentInput = nextDigit;
             else currentInput += nextDigit;
             
             updateUI();
             updateIndicator(forceSequence.length - seqIdx);
-        }
 
-        if (seqIdx === forceSequence.length) {
-            exitSecretMode();
+            // Added the 1-second delay after the final tap
+            if (seqIdx === forceSequence.length) {
+                setTimeout(() => { exitSecretMode(); }, 1000);
+            }
         }
     }
 });
@@ -60,5 +52,5 @@ function exitSecretMode() {
     seqIdx = 0;
     forceSequence = "";
     if (typeof killCardMode === 'function') killCardMode();
-    setTimeout(() => { document.getElementById('tap-cue').style.display = 'none'; }, 1000);
+    document.getElementById('tap-cue').style.display = 'none';
 }
