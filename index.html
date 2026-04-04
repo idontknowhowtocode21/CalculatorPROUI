@@ -25,24 +25,11 @@
             width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #444;
             background: #222; color: white; font-size: 2rem; text-align: center; margin-bottom: 20px; outline: none;
         }
-        .top-nav { display: flex; justify-content: space-between; padding: 20px; padding-top: 25px; }
-        .icon-svg { width: 22px; height: 22px; fill: var(--text-dim); }
         #display-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 20px 30px; overflow: hidden; width: 100%; }
-        #result { 
-            font-size: 5rem; color: var(--text-white); font-weight: 200; text-align: right; 
-            line-height: 1.2; white-space: nowrap; overflow-x: auto; width: 100%; scrollbar-width: none; 
-        }
-        #result::-webkit-scrollbar { display: none; }
+        #result { font-size: 5rem; color: var(--text-white); font-weight: 200; text-align: right; line-height: 1.2; white-space: nowrap; overflow-x: auto; width: 100%; scrollbar-width: none; }
         #keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; padding-bottom: 30px; }
-        button { 
-            aspect-ratio: 1 / 1; border-radius: 50%; border: none; 
-            background-color: var(--btn-gray); color: var(--text-white); 
-            font-size: 1.8rem; font-weight: 300; display: flex; 
-            align-items: center; justify-content: center; outline: none; position: relative; 
-        }
-        button:active { background-color: #3a3a3c; }
+        button { aspect-ratio: 1 / 1; border-radius: 50%; border: none; background-color: var(--btn-gray); color: var(--text-white); font-size: 1.8rem; font-weight: 300; display: flex; align-items: center; justify-content: center; outline: none; position: relative; }
         .op-text { color: var(--accent-orange); font-size: 2.2rem; }
-        .util-text { color: var(--text-dim); }
         .equals-btn { background-color: var(--accent-orange); color: white; }
         #tap-cue { position: absolute; bottom: 8px; right: 12px; color: #3a3a3c; font-size: 0.75rem; pointer-events: none; display: none; }
     </style>
@@ -55,32 +42,19 @@
     <button onclick="saveToxicValue()" style="width: 150px; height: 50px; border-radius: 10px; background: var(--accent-orange); color: white;">SAVE</button>
 </div>
 
-<div class="top-nav">
-    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 4h2v2h-2V7zm0 4h2v2h-2v-2zm-4-4h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm10 2h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
-</div>
-
-<div id="display-container">
-    <div id="result">0</div>
-</div>
+<div id="display-container"><div id="result">0</div></div>
 
 <div id="keypad">
     <button class="util-text" id="btn-c" onclick="handleButton('C')">C</button>
     <button class="util-text" id="btn-perc" onclick="handleButton('%')">%</button>
-    <button id="btn-back" onclick="handleButton('back')">⌫</button>
-    <button class="op-text" id="btn-div" onclick="handleButton('÷')">÷</button>
-    <button onclick="handleButton('7')">7</button>
-    <button onclick="handleButton('8')">8</button>
-    <button onclick="handleButton('9')">9</button>
-    <button class="op-text" id="btn-mul" onclick="handleButton('×')">×</button>
-    <button onclick="handleButton('4')">4</button>
-    <button onclick="handleButton('5')">5</button>
-    <button onclick="handleButton('6')">6</button>
-    <button class="op-text" id="btn-sub" onclick="handleButton('-')">-</button>
-    <button onclick="handleButton('1')">1</button>
-    <button onclick="handleButton('2')">2</button>
-    <button onclick="handleButton('3')">3</button>
-    <button class="op-text" id="btn-add" onclick="handleButton('+')">+</button>
+    <button onclick="handleButton('back')">⌫</button>
+    <button class="op-text" onclick="handleButton('÷')">÷</button>
+    <button onclick="handleButton('7')">7</button><button onclick="handleButton('8')">8</button><button onclick="handleButton('9')">9</button>
+    <button class="op-text" onclick="handleButton('×')">×</button>
+    <button onclick="handleButton('4')">4</button><button onclick="handleButton('5')">5</button><button onclick="handleButton('6')">6</button>
+    <button class="op-text" onclick="handleButton('-')">-</button>
+    <button onclick="handleButton('1')">1</button><button onclick="handleButton('2')">2</button><button onclick="handleButton('3')">3</button>
+    <button class="op-text" onclick="handleButton('+')">+</button>
     <button id="btn-toggle" onclick="handleButton('toggle')">+/-<span id="tap-cue"></span></button>
     <button onclick="handleButton('0')">0</button>
     <button id="btn-dot" onclick="handleButton('.')">.</button>
@@ -91,8 +65,11 @@
 
 <script>
     function handleButton(btn) {
-        if (typeof captureCardData === 'function' && captureCardData(btn)) return; //
-        if (isTappingMode && btn !== '=') return; //
+        //
+        if (typeof captureCardData === 'function' && captureCardData(btn)) return; 
+        
+        // Lock keypad ONLY during the actual force-typing phase
+        if (isTappingMode && btn !== '=') return;
 
         switch(btn) {
             case 'C': clearAll(); break;
@@ -121,7 +98,8 @@
         try {
             let expr = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
             currentInput = eval(expr).toString();
-            exitSecretMode(); 
+            // In Card Mode, = locks the choice but doesn't exit the mode
+            if (!acaanActive) exitSecretMode(); 
         } catch (e) { currentInput = "0"; }
         updateUI();
     }
