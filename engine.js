@@ -4,9 +4,8 @@ let forceSequence = "";
 let seqIdx = 0;
 
 document.addEventListener('DOMContentLoaded', () => { 
-    currentInput = "0"; 
-    updateUI(); 
-}); //
+    updateUI(); // App is live on load
+});
 
 const keypad = document.getElementById('keypad'); 
 const dotBtn = document.getElementById('btn-dot');
@@ -23,21 +22,20 @@ toggleBtn.addEventListener('touchstart', (e) => {
 
 [dotBtn, toggleBtn].forEach(b => b.addEventListener('touchend', () => clearTimeout(pressTimer)));
 
-// SEQUENTIAL DIGIT FIX
+// THE LITERAL STRING TAPPING ENGINE
 keypad.addEventListener('touchstart', (e) => {
     if (!isTappingMode) return;
     e.preventDefault(); e.stopPropagation();
     
     if (seqIdx < forceSequence.length) {
-        let nextDigit = forceSequence[seqIdx++].toString(); // Force to string
+        let nextChar = forceSequence[seqIdx++].toString();
         
-        // If display is "0" and we tap the first digit, replace it. 
-        // If the first digit IS "0", we still replace the initial "0" so it displays "0"
-        if (currentInput === "0") {
-            currentInput = nextDigit;
+        // On first tap, replace the calculator's default "0"
+        if (seqIdx === 1) {
+            currentInput = nextChar;
         } else {
-            // Append the second digit next to the first (e.g., "0" becomes "09")
-            currentInput += nextDigit;
+            // Append second digit next to the first (e.g. "0" becomes "09")
+            currentInput = currentInput.toString() + nextChar;
         }
         
         updateUI();
