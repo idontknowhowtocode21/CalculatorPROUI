@@ -23,7 +23,8 @@ function saveToxicValue() {
 
 function calculateToxicGap() {
     try {
-        if (typeof foundPos !== 'undefined' && foundPos !== "") { //
+        // Check if an ACAAN position is locked
+        if (typeof foundPos !== 'undefined' && foundPos !== "") { 
             forceSequence = foundPos;
             tappingType = 'acaan';
         } else {
@@ -31,7 +32,6 @@ function calculateToxicGap() {
             let lastChar = currentInput.slice(-1);
             let evalInput = (['+','-','*','/'].includes(cleanInput.slice(-1))) ? cleanInput.slice(0,-1) : cleanInput;
             let currentTotal = eval(evalInput) || 0;
-            
             let gap = lastChar === '+' ? parseFloat(targetGoal) - currentTotal : (lastChar === '×' ? parseFloat(targetGoal) / currentTotal : targetGoal);
             forceSequence = Math.abs(gap).toString();
             tappingType = 'toxic';
