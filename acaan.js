@@ -7,31 +7,21 @@ function activateAcaanMode() {
 }
 
 function captureCardData(btn) {
-    if (!acaanActive) return false; //
-    
+    if (!acaanActive) return false;
     const vals = {'1':'A','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9','0':'10','back':'J','%':'Q','C':'K'};
     const suits = {'÷':'S','×':'C','-':'H','+':'D'};
 
-    if (vals[btn]) { cardVal = vals[btn]; return true; } //
-    
+    if (vals[btn]) { cardVal = vals[btn]; return true; }
     if (suits[btn] && cardVal) {
         let idx = STACK.indexOf(cardVal + suits[btn]); //
         if (idx !== -1) { 
-            // Lock position as 2 digits
-            foundPos = (idx + 1).toString().padStart(2, '0'); 
+            foundPos = (idx + 1).toString().padStart(2, '0'); // Always 2 digits
             updateIndicator(foundPos); 
         }
-        cardVal = ""; 
-        return true; 
+        cardVal = ""; return true;
     }
-
-    // Pressing Equals stops the "Listening" but keeps the "Position" locked
-    if (btn === '=') {
-        acaanActive = false; 
-        return false; 
-    }
-
+    if (btn === '=') { acaanActive = false; return false; }
     return false;
 }
 
-function killCardMode() { acaanActive = false; cardVal = ""; foundPos = ""; } //
+function killCardMode() { acaanActive = false; cardVal = ""; foundPos = ""; }
