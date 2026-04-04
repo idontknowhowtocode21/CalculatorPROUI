@@ -12,6 +12,7 @@
             --bg-black: #000000; --btn-gray: #1c1c1e; --text-white: #ffffff;
             --text-dim: #8e8e93; --accent-orange: #f39c12;
         }
+        /* KILL HIGHLIGHTING & NATIVE FEEL */
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
@@ -53,7 +54,7 @@
 
 <div class="top-nav">
     <svg class="icon-svg" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 4h2v2h-2V7zm0 4h2v2h-2v-2zm-4-4h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm10 2h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
+    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 4h2v2-h-2V7zm0 4h2v2h-2v-2zm-4-4h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm10 2h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
 </div>
 
 <div id="display-container"><div id="result">0</div></div>
@@ -81,14 +82,11 @@
     let currentInput = "0";
 
     function handleButton(btn) {
-        // If we are currently in "Tapping Mode", ignore everything except the Equals button
         if (isTappingMode && btn !== '=') return;
-        
-        // Check for ACAAN setup
         if (typeof captureCardData === 'function' && captureCardData(btn)) return;
 
         switch(btn) {
-            case 'C': currentInput = "0"; break;
+            case 'C': currentInput = "0"; exitSecretMode(); break;
             case '%': handlePercentLogic(); break;
             case 'back': currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0"; break;
             case '=': runCalculation(); break;
@@ -114,7 +112,6 @@
         try {
             let expr = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
             currentInput = eval(expr).toString();
-            // Only kill secret modes if we aren't mid-trick
             if (typeof foundPos !== 'undefined' && foundPos === "") exitSecretMode();
         } catch (e) { currentInput = "0"; }
         updateUI();
@@ -127,7 +124,8 @@
 
     function updateUI() {
         const res = document.getElementById('result');
-        res.innerText = currentInput.toString() === "" ? "0" : currentInput.toString();
+        let val = currentInput.toString();
+        res.innerText = (val === "" || val === "undefined") ? "0" : val;
         res.scrollLeft = res.scrollWidth;
     }
 </script>
