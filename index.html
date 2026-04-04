@@ -9,70 +9,190 @@
     <title>Calculator</title>
     <style>
         :root {
-            --bg-black: #000000; --btn-gray: #1c1c1e; --text-white: #ffffff;
-            --text-dim: #8e8e93; --accent-orange: #f39c12;
+            /* XIAOMI COLOR PALETTE */
+            --bg-black: #000000;
+            --btn-dark-grey: #1c1c1e;   /* Utilities & Operators */
+            --btn-light-grey: #2e2e30;  /* Numbers (0-9) & +/- & . */
+            --text-white: #ffffff;
+            --accent-orange: #ff9100;    /* Adjusted for the specific hue */
         }
-        /* KILL HIGHLIGHTING & NATIVE FEEL */
+
+        /* Standardize and Disable Selection/Highlights */
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
             -webkit-user-select: none; 
             -webkit-touch-callout: none; 
             user-select: none;
-            margin: 0; padding: 0; 
+            margin: 0; 
+            padding: 0; 
         }
+
         body, html {
-            height: 100%; width: 100%; background-color: var(--bg-black);
-            font-family: 'sans-serif-light', 'Roboto-Light', sans-serif;
-            display: flex; flex-direction: column; overflow: hidden; position: relative;
-            padding-top: env(safe-area-inset-top);
+            height: 100%; 
+            width: 100%; 
+            background-color: var(--bg-black);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            position: relative;
+            color: var(--text-white);
         }
-        .top-nav { display: flex; justify-content: space-between; padding: 20px; padding-top: 25px; }
-        .icon-svg { width: 22px; height: 22px; fill: var(--text-dim); }
-        #display-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 20px 30px; overflow: hidden; width: 100%; }
-        #result { font-size: 5rem; color: var(--text-white); font-weight: 200; text-align: right; line-height: 1.2; white-space: nowrap; overflow-x: auto; width: 100%; scrollbar-width: none; }
-        #keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; padding-bottom: 30px; touch-action: none; }
-        button { aspect-ratio: 1 / 1; border-radius: 50%; border: none; background-color: var(--btn-gray); color: var(--text-white); font-size: 1.8rem; font-weight: 300; display: flex; align-items: center; justify-content: center; outline: none; position: relative; }
-        .op-text { color: var(--accent-orange); font-size: 2.2rem; }
-        .equals-btn { background-color: var(--accent-orange); color: white; }
-        #tap-cue { position: absolute; bottom: 8px; right: 12px; color: #3a3a3c; font-size: 0.75rem; pointer-events: none; display: none; }
+
+        /* Xiaomi Top Nav Bar Structure */
+        .top-nav { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 20px; 
+            padding-top: max(20px, env(safe-area-inset-top)); 
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .icon-svg { 
+            width: 20px; 
+            height: 20px; 
+            fill: #707070; /* Xiaomi dim icons */
+        }
+
+        /* Display Area: Creating the massive black negative space */
+        #display-container { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-end; 
+            align-items: flex-end; 
+            padding: 40px; /* Increased vertical padding */
+            overflow: hidden; 
+            width: 100%;
+        }
+
+        #result { 
+            font-size: 4rem; /* Adjusted down slightly from 5rem to match proporción */
+            font-weight: 300; 
+            text-align: right; 
+            line-height: 1.1; 
+            white-space: nowrap; 
+            overflow-x: auto; 
+            width: 100%; 
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+        }
+        #result::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
+
+        /* Keypad Layout and Spacing */
+        #keypad { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px; /* Wider gap to match Xiaomi */
+            padding: 20px; 
+            padding-bottom: max(20px, env(safe-area-inset-bottom)); /* Add safe area buffer */
+            touch-action: none;
+        }
+
+        /* Base Button Style */
+        button { 
+            aspect-ratio: 1 / 1; 
+            border-radius: 50%; 
+            border: none; 
+            font-size: 2rem; /* Numbers visibility */
+            font-weight: 400; /* Matching weight */
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            outline: none; 
+            position: relative; 
+            cursor: pointer;
+            transition: opacity 0.1s ease;
+        }
+        
+        button:active { opacity: 0.7; }
+
+        /* Color Coding */
+        
+        /* Dark Grey: C, %, Backspace, and right-column operators */
+        .util-bg, .op-text { 
+            background-color: var(--btn-dark-grey); 
+            color: var(--text-white); 
+        }
+
+        /* Numbers 0-9, and the +/- and . buttons are a slightly lighter grey */
+        .num-bg, #btn-toggle, #btn-dot {
+            background-color: var(--btn-light-grey);
+            color: var(--text-white);
+        }
+
+        /* Correct symbol color for operations */
+        .op-text { 
+            font-size: 2.2rem; /* Slight visual tweak for symbols */
+        }
+
+        /* The distinctive orange equals button */
+        .equals-btn { 
+            background-color: var(--accent-orange); 
+            color: white; 
+            font-size: 2.5rem;
+        }
+
+        /* The Secret Peak indicator location */
+        #tap-cue { 
+            position: absolute; 
+            bottom: 12px; 
+            right: 15px; 
+            color: #3a3a3c; 
+            font-size: 0.7rem; 
+            pointer-events: none; 
+            display: none; 
+        }
+
+        /* Force Value Input Overlay */
         #secret-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column;
+            background: rgba(0,0,0,0.98); z-index: 1000; flex-direction: column;
             align-items: center; justify-content: center; color: white;
         }
         #secret-overlay input { width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #222; color: white; font-size: 2rem; text-align: center; margin-bottom: 20px; outline: none; }
+
     </style>
 </head>
 <body>
 
 <div id="secret-overlay">
-    <p style="margin-bottom: 10px; color: var(--text-dim);">Set Toxic Force Goal</p>
+    <p style="margin-bottom: 10px; color: #8e8e93;">Set Toxic Force Goal</p>
     <input type="number" id="force-input" placeholder="0">
-    <button onclick="saveToxicValue()" style="width: 150px; height: 50px; border-radius: 10px; background: var(--accent-orange); color: white;">SAVE</button>
+    <button onclick="saveToxicValue()" style="width: 150px; height: 50px; border-radius: 10px; background: var(--accent-orange); color: white; font-size: 1rem;">SAVE</button>
 </div>
 
 <div class="top-nav">
     <svg class="icon-svg" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 4h2v2-h-2V7zm0 4h2v2h-2v-2zm-4-4h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm10 2h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
+    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 4h2v2h-2V7zm0 4h2v2h-2v-2zm-4-4h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm10 2h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
 </div>
 
 <div id="display-container"><div id="result">0</div></div>
 
 <div id="keypad">
-    <button onclick="handleButton('C')">C</button>
-    <button onclick="handleButton('%')">%</button>
-    <button onclick="handleButton('back')">⌫</button>
+    <button class="util-bg" onclick="handleButton('C')">C</button>
+    <button class="util-bg" onclick="handleButton('%')">%</button>
+    <button class="util-bg" onclick="handleButton('back')">⌫</button>
     <button class="op-text" onclick="handleButton('÷')">÷</button>
-    <button onclick="handleButton('7')">7</button><button onclick="handleButton('8')">8</button><button onclick="handleButton('9')">9</button>
+
+    <button class="num-bg" onclick="handleButton('7')">7</button>
+    <button class="num-bg" onclick="handleButton('8')">8</button>
+    <button class="num-bg" onclick="handleButton('9')">9</button>
     <button class="op-text" onclick="handleButton('×')">×</button>
-    <button onclick="handleButton('4')">4</button><button onclick="handleButton('5')">5</button><button onclick="handleButton('6')">6</button>
+
+    <button class="num-bg" onclick="handleButton('4')">4</button>
+    <button class="num-bg" onclick="handleButton('5')">5</button>
+    <button class="num-bg" onclick="handleButton('6')">6</button>
     <button class="op-text" onclick="handleButton('-')">-</button>
-    <button onclick="handleButton('1')">1</button><button onclick="handleButton('2')">2</button><button onclick="handleButton('3')">3</button>
+
+    <button class="num-bg" onclick="handleButton('1')">1</button>
+    <button class="num-bg" onclick="handleButton('2')">2</button>
+    <button class="num-bg" onclick="handleButton('3')">3</button>
     <button class="op-text" onclick="handleButton('+')">+</button>
-    <button id="btn-toggle" onclick="handleButton('toggle')">+/-<span id="tap-cue"></span></button>
-    <button onclick="handleButton('0')">0</button>
-    <button id="btn-dot" onclick="handleButton('.')">.</button>
+
+    <button class="num-bg" id="btn-toggle" onclick="handleButton('toggle')">+/-<span id="tap-cue"></span></button>
+    <button class="num-bg" onclick="handleButton('0')">0</button>
+    <button class="num-bg" id="btn-dot" onclick="handleButton('.')">.</button>
     <button class="equals-btn" id="btn-equals" onclick="handleButton('=')">=</button>
 </div>
 
