@@ -5,7 +5,7 @@ function handlePercentLogic() {
     pCount++;
     clearTimeout(pTimer);
     if (pCount === 3) {
-        document.getElementById('secret-overlay').style.display = 'flex'; //
+        document.getElementById('secret-overlay').style.display = 'flex';
         pCount = 0;
     } else {
         pTimer = setTimeout(() => {
@@ -23,20 +23,29 @@ function saveToxicValue() {
 
 function calculateToxicGap() {
     try {
-        // If a card position exists, it takes priority
-        if (typeof foundPos !== 'undefined' && foundPos !== "") { 
+        if (typeof foundPos !== 'undefined' && foundPos !== "") {
             forceSequence = foundPos;
             tappingType = 'acaan';
         } else {
-            // Revert to primary goal
-            let cleanInput = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
-            let lastChar = currentInput.slice(-1);
-            let evalInput = (['+','-','*','/'].includes(cleanInput.slice(-1))) ? cleanInput.slice(0,-1) : cleanInput;
-            let currentTotal = eval(evalInput) || 0;
-            let gap = lastChar === '+' ? parseFloat(targetGoal) - currentTotal : (lastChar === '×' ? parseFloat(targetGoal) / currentTotal : targetGoal);
+            // Convert visual symbols to math symbols
+            let mathString = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
+            
+            // If the last character is an operator, remove it just to calculate current total
+            let evalString = (['+','-','*','/'].includes(mathString.slice(-1))) ? mathString.slice(0,-1) : mathString;
+            let currentTotal = eval(evalString) || 0;
+            
+            // Math: Target - Current = The Number they need to tap
+            let gap = parseFloat(targetGoal) - currentTotal;
+            
+            // Use absolute value and convert to string for the tapping sequence
             forceSequence = Math.abs(gap).toString();
             tappingType = 'toxic';
         }
-        isTappingMode = true; seqIdx = 0; updateIndicator(forceSequence.length); //
-    } catch (e) { console.error("Math Error"); }
+        isTappingMode = true; 
+        seqIdx = 0; 
+        updateIndicator(forceSequence.length);
+    } catch (e) { 
+        console.error("Toxic Error", e); 
+        exitSecretMode();
+    }
 }
