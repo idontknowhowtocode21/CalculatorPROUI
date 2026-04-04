@@ -22,7 +22,7 @@
             display: flex; flex-direction: column; overflow: hidden; position: relative;
         }
 
-        /* Setup Overlay */
+        /* Setup Overlay for Toxic Force */
         #secret-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column;
@@ -60,6 +60,7 @@
         .util-text { color: var(--text-dim); }
         .equals-btn { background-color: var(--accent-orange); color: white; }
         
+        /* Tiny cue number for the performer */
         #tap-cue { position: absolute; bottom: 12px; left: 12px; color: #2c2c2e; font-size: 0.75rem; pointer-events: none; display: none; }
     </style>
 </head>
@@ -115,6 +116,8 @@
 <script src="engine.js"></script>
 
 <script>
+    var currentInput = "";
+
     // --- THE ROUTER ---
     function handleButton(btn) {
         // Priority 1: Card Mode "C" Stage Management
@@ -123,16 +126,17 @@
             return;
         }
 
-        // Priority 2: Block keypad while Toxic Force is in "Blind Tap" mode
-        if (isTappingMode) return;
+        // Priority 2: CRITICAL BYPASS - If '=' is pressed, ignore the lock
+        // This ensures the Equals button always works during the Toxic Reveal
+        if (isTappingMode && btn !== '=') return;
 
-        // Priority 3: Silent Card Entry (Value then Suit)
-        if (cardMode && !['toggle', '='].includes(btn)) {
+        // Priority 3: Silent Card Entry (Interpreted in acaan.js)
+        if (cardMode && !isTappingMode && !['toggle', '='].includes(btn)) {
             captureCardData(btn);
             return;
         }
 
-        // Standard Calculator Routing
+        // Standard Calculator Logic
         switch(btn) {
             case 'C': clearAll(); break;
             case '%': handlePercentLogic(); break;
@@ -157,18 +161,23 @@
     }
 
     function runCalculation() {
-        if (!currentInput) return;
+        if (!currentInput || currentInput === "0") return;
         try {
-            let math = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
-            currentInput = eval(math).toString();
+            // Replace visual operators with JS math
+            let mathExpression = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
+            currentInput = eval(mathExpression).toString();
             
-            // CLEAN UP: Once equals is hit, we ensure all trick states are reset
+            // THE EQUALS FIX: Force all trick modes to reset upon calculation
             isTappingMode = false;
             tappingType = null;
             tappingPhase = "normal";
-            if (cardMode) killCardMode(); 
             
+            // Reset Card Mode if applicable
+            if (typeof killCardMode === "function") killCardMode(); 
+            
+            // Clean up visual cue
             document.getElementById('tap-cue').style.display = "none";
+            
         } catch (e) {
             currentInput = "Error";
         }
@@ -192,12 +201,14 @@
         const resultEl = document.getElementById('result');
         resultEl.innerText = currentInput || "0";
         
+        // Font size scaling logic
         let len = resultEl.innerText.length;
         if (len > 15) resultEl.style.fontSize = "2.2rem";
         else if (len > 11) resultEl.style.fontSize = "3rem";
         else if (len > 7) resultEl.style.fontSize = "4rem";
         else resultEl.style.fontSize = "5rem";
 
+        // Keeps result scrolled to the end
         setTimeout(() => { resultEl.scrollLeft = resultEl.scrollWidth; }, 0);
     }
 </script>
