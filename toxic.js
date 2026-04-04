@@ -5,14 +5,25 @@ let pTimer;
 function handlePercentLogic() {
     pCount++;
     clearTimeout(pTimer);
+    
     if (pCount === 3) {
         document.getElementById('secret-overlay').style.display = 'flex';
         pCount = 0;
-    } else {
-        appendChar('%');
-        pTimer = setTimeout(() => pCount = 0, 500);
-    }
+        // Logic: We simply return here so the 3rd '%' is never added to the screen.
+        return; 
+    } 
+
+    pTimer = setTimeout(() => {
+        // Only if we haven't hit 3 taps within 500ms, we add the '%' symbols.
+        // For a more natural feel, we only add them if the user stopped at 1 or 2 taps.
+        for(let i=0; i < pCount; i++) {
+            appendChar('%');
+        }
+        updateUI();
+        pCount = 0;
+    }, 500);
 }
+
 
 function saveToxicValue() {
     const val = document.getElementById('force-input').value;
