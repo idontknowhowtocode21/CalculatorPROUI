@@ -1,16 +1,16 @@
 {
   "short_name": "Calculator",
-  "name": "Calculator",
+  "name": "Xiaomi Calculator",
+  "start_url": "index.html",
+  "background_color": "#000000",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/71/71403.png",
       "type": "image/png",
       "sizes": "512x512"
     }
-  ],
-  "start_url": "index.html",
-  "background_color": "#000000",
-  "display": "standalone",
-  "scope": "./",
-  "theme_color": "#000000"
+  ]
 }
