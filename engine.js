@@ -60,33 +60,28 @@ setupLong('btn-equals', () => {
     tappingPhase = "random";
 });
 
-// --- GLOBAL TOUCH LISTENER ---
-// This is the part that was likely blocking your '=' button
-document.getElementById('calc-body').addEventListener('touchstart', (e) => {
-    // 1. If we aren't tapping, do nothing and let buttons work
-    if (!isTappingMode) return;
 
-    // 2. Block the actual button press while we are tapping
-    // EXCEPT for the 'C' button during ACAAN mode
-    if (e.target.tagName === 'BUTTON' && !(tappingType === 'acaan' && e.target.id === 'btn-c')) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
+// engine.js - Inside the Global Touch Listener
+document.getElementById('calc-body').addEventListener('touchstart', (e) => {
+    if (!isTappingMode) return; // If not in a mode, do nothing
+    e.preventDefault();
 
     if (tappingType === 'acaan' && tappingPhase === "random") {
         currentInput += Math.floor(Math.random() * 9) + 1;
     } else {
+        // FORCE PHASE (Toxic or ACAAN)
         if (seqIdx < forceSequence.length) {
             currentInput += forceSequence[seqIdx++];
-            document.getElementById('tap-cue').style.display = "none";
-        }
-        
-        // --- THE FIX ---
-        // If it's Toxic Mode and we just finished the last digit, 
-        // we kill isTappingMode IMMEDIATELY so the next touch (=) works.
-        if (seqIdx === forceSequence.length && tappingType === 'toxic') {
-            isTappingMode = false;
+            
+            // --- THE KEY FIX FOR TOXIC MODE ---
+            // As soon as the last digit is tapped, we KILL isTappingMode
+            // This allows the very next touch (the '=' button) to be seen as a normal button
+            if (tappingType === 'toxic' && seqIdx === forceSequence.length) {
+                isTappingMode = false; 
+                document.getElementById('tap-cue').style.display = "none";
+            }
         }
     }
     updateUI();
 }, {passive: false});
+
