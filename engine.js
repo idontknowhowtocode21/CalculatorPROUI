@@ -12,7 +12,7 @@ const dotBtn = document.getElementById('btn-dot');
 const toggleBtn = document.getElementById('btn-toggle');
 let pressTimer;
 
-// Activation Triggers
+// Activation
 dotBtn.addEventListener('touchstart', (e) => {
     pressTimer = setTimeout(() => { calculateToxicGap(); }, 1000);
 });
@@ -23,36 +23,30 @@ toggleBtn.addEventListener('touchstart', (e) => {
 
 [dotBtn, toggleBtn].forEach(b => b.addEventListener('touchend', () => clearTimeout(pressTimer)));
 
-// The Tapping Engine
+// Tapping Logic
 keypad.addEventListener('touchstart', (e) => {
     if (!isTappingMode) return;
-    e.preventDefault(); 
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     
     if (seqIdx < forceSequence.length) {
         let nextChar = forceSequence[seqIdx++].toString();
         
         if (tappingType === 'acaan') {
-            // CARD MODE: REPLACE LOGIC
-            if (seqIdx === 1) {
-                currentInput = nextChar;
-            } else {
-                currentInput = currentInput.toString() + nextChar;
-            }
+            // REPLACE screen for Cards
+            if (seqIdx === 1) currentInput = nextChar;
+            else currentInput = currentInput.toString() + nextChar;
         } else {
-            // TOXIC MODE: APPEND LOGIC
+            // APPEND screen for Toxic Math
             currentInput = currentInput.toString() + nextChar;
         }
         
         updateUI();
-
-        // Calculate remaining taps
         let remaining = forceSequence.length - seqIdx;
         
         if (remaining > 0) {
             updateIndicator(remaining);
         } else {
-            // FEEDBACK FIX: Make the number vanish on the final tap
+            // Instant Vanishing Peak on last tap
             updateIndicator(""); 
             isTappingMode = false; 
         }
@@ -61,7 +55,7 @@ keypad.addEventListener('touchstart', (e) => {
 
 function updateIndicator(text) {
     const cue = document.getElementById('tap-cue');
-    if (text === "" || text === null) {
+    if (!text) {
         cue.innerText = "";
         cue.style.display = 'none';
     } else {
@@ -70,11 +64,13 @@ function updateIndicator(text) {
     }
 }
 
+// Panic Reset Function (Triggered by Top Right Icon)
 function exitSecretMode() {
     isTappingMode = false;
     tappingType = null;
     seqIdx = 0;
     forceSequence = "";
     if (typeof killCardMode === 'function') killCardMode(); 
-    updateIndicator(""); // Ensure it's hidden
+    updateIndicator(""); 
+    updateUI();
 }
