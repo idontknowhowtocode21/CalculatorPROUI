@@ -12,7 +12,7 @@
             --bg-black: #000000; --btn-gray: #1c1c1e; --text-white: #ffffff;
             --text-dim: #8e8e93; --accent-orange: #f39c12;
         }
-        /* Disable highlighting and system popups */
+        /* Disable highlighting and system callouts */
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
@@ -27,15 +27,6 @@
             display: flex; flex-direction: column; overflow: hidden; position: relative;
             padding-top: env(safe-area-inset-top);
         }
-        #secret-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column;
-            align-items: center; justify-content: center; color: white;
-        }
-        #secret-overlay input {
-            width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #444;
-            background: #222; color: white; font-size: 2rem; text-align: center; margin-bottom: 20px; outline: none;
-        }
         .top-nav { display: flex; justify-content: space-between; padding: 20px; padding-top: 25px; }
         .icon-svg { width: 22px; height: 22px; fill: var(--text-dim); }
         #display-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 20px 30px; overflow: hidden; width: 100%; }
@@ -45,9 +36,15 @@
         .op-text { color: var(--accent-orange); font-size: 2.2rem; }
         .equals-btn { background-color: var(--accent-orange); color: white; }
         #tap-cue { position: absolute; bottom: 8px; right: 12px; color: #3a3a3c; font-size: 0.75rem; pointer-events: none; display: none; }
+        #secret-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column;
+            align-items: center; justify-content: center; color: white;
+        }
+        #secret-overlay input { width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #222; color: white; font-size: 2rem; text-align: center; margin-bottom: 20px; outline: none; }
     </style>
 </head>
-<body id="calc-body">
+<body>
 
 <div id="secret-overlay">
     <p style="margin-bottom: 10px; color: var(--text-dim);">Set Toxic Force Goal</p>
@@ -82,12 +79,14 @@
 <script src="acaan.js"></script><script src="toxic.js"></script><script src="engine.js"></script>
 
 <script>
+    let currentInput = "0";
+
     function handleButton(btn) {
-        if (typeof captureCardData === 'function' && captureCardData(btn)) return; //
-        if (isTappingMode && btn !== '=') return; //
+        if (typeof captureCardData === 'function' && captureCardData(btn)) return;
+        if (isTappingMode && btn !== '=') return;
 
         switch(btn) {
-            case 'C': clearScreenOnly(); break; //
+            case 'C': currentInput = "0"; break;
             case '%': handlePercentLogic(); break;
             case 'back': currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0"; break;
             case '=': runCalculation(); break;
@@ -101,7 +100,7 @@
     function appendChar(char) {
         const ops = ['+', '-', '×', '÷'];
         const last = currentInput.slice(-1);
-        if (ops.includes(last) && ops.includes(char)) { // Operator Overwrite
+        if (ops.includes(last) && ops.includes(char)) {
             currentInput = currentInput.slice(0, -1) + char;
             return;
         }
@@ -113,15 +112,10 @@
         try {
             let expr = currentInput.replace(/×/g, '*').replace(/÷/g, '/');
             currentInput = eval(expr).toString();
-            // Only exit if card mode is not active
-            if (typeof foundPos !== 'undefined' && foundPos === "") {
-                exitSecretMode(); 
-            }
+            if (typeof foundPos !== 'undefined' && foundPos === "") exitSecretMode();
         } catch (e) { currentInput = "0"; }
         updateUI();
     }
-
-    function clearScreenOnly() { currentInput = "0"; updateUI(); } //
 
     function toggleSign() {
         if (currentInput === "0") return;
@@ -130,7 +124,8 @@
 
     function updateUI() {
         const res = document.getElementById('result');
-        res.innerText = currentInput;
+        // STRING PRESERVATION: Treat input as raw text to keep leading zeros
+        res.innerText = currentInput.toString() === "" ? "0" : currentInput.toString();
         res.scrollLeft = res.scrollWidth;
     }
 </script>
