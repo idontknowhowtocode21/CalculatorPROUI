@@ -1,10 +1,11 @@
-const CACHE_NAME = 'calc-v1';
+const CACHE_NAME = 'calc-v2';
 const ASSETS = [
-  'index.html',
-  'acaan.js',
-  'toxic.js',
-  'engine.js',
-  'manifest.json'
+  '/CalculatorPROUI/',
+  '/CalculatorPROUI/index.html',
+  '/CalculatorPROUI/acaan.js',
+  '/CalculatorPROUI/toxic.js',
+  '/CalculatorPROUI/engine.js',
+  '/CalculatorPROUI/manifest.json'
 ];
 
 self.addEventListener('install', (e) => {
